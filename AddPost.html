@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Post - BlogWave</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .drag-drop-area {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .drag-drop-area:hover, .drag-drop-area.dragover {
+            border-color: #667eea;
+            background-color: #ebf4ff;
+        }
+        #editor {
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-indigo-700">Create New Blog Post</h1>
+            <a href="index.html" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </a>
+        </header>
+
+        <!-- Form -->
+        <form class="space-y-6">
+            <!-- Title -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" placeholder="Enter a catchy title..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option disabled selected>Select a category</option>
+                    <option>Technology</option>
+                    <option>Design</option>
+                    <option>Business</option>
+                    <option>Science</option>
+                    <option>Health</option>
+                    <option>Lifestyle</option>
+                </select>
+            </div>
+
+            <!-- Cover Image -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                <div class="drag-drop-area rounded-md p-8 text-center cursor-pointer" id="dropArea">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-indigo-500"></i>
+                        <p class="text-gray-600">Upload a file or drag and drop</p>
+                        <p class="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        <button type="button" class="mt-2 bg-indigo-600 text-white px-4 py-1 rounded-md text-sm hover:bg-indigo-700">
+                            Select File
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" accept="image/*">
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <div id="editor" class="border border-gray-300 rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                     contenteditable="true" placeholder="Start writing your blog post here...">
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                <input type="text" placeholder="Include tags: website, programming..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <p class="text-xs text-gray-500 mt-1">Separate tags with commas.</p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 pt-4">
+                <button type="button" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Save as Draft
+                </button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    Publish
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            // Handle click on drop area
+            dropArea.addEventListener('click', () => fileInput.click());
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                if (fileInput.files.length) {
+                    handleFiles(fileInput.files);
+                }
+            });
+            
+            // Handle drag over
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Handle drop
+            dropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            function highlight(e) {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            }
+            
+            function unhighlight(e) {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+            }
+            
+            function handleFiles(files) {
+                const file = files[0];
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        dropArea.innerHTML = `
+                            <div class="flex flex-col items-center">
+                                <img src="${e.target.result}" alt="Preview" class="max-h-48 rounded-md mb-2">
+                                <p class="text-sm text-gray-700">${file.name}</p>
+                                <button type="button" class="mt-2 text-red-500 text-sm hover:text-red-700" id="removeImage">
+                                    Remove
+                                </button>
+                            </div>
+                        `;
+                        
+                        document.getElementById('removeImage').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            resetDropArea();
+                            fileInput.value = '';
+                        });
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please select an image file.');
+                    resetDropArea();
+                    fileInput.value = '';
+                }
+            }
+            
+            function resetDropArea() {
+                dropArea.innerHTML = `
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-indigo-500"></i>
+                        <p class="text-gray-600">Upload a file or drag and drop</p>
+                        <p class="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        <button type="button" class="mt-2 bg-indigo-600 text-white px-4 py-1 rounded-md text-sm hover:bg-indigo-700">
+                            Select File
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
